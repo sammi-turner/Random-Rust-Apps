@@ -4,7 +4,7 @@
 extern crate ncurses;
 
 use ncurses::*;
-use ncurses::CURSOR_VISIBILITY::{CURSOR_INVISIBLE, CURSOR_VISIBLE};
+use ncurses::CURSOR_VISIBILITY::{CURSOR_INVISIBLE};
 
 use std::*;
 use std::io::*;
