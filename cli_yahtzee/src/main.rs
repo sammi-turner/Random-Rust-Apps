@@ -2,7 +2,7 @@ mod utils;
 mod yahtzee;
 
 use utils::{seed, vt_open, vt_close};
-use yahtzee::{Game, main_loop};
+use yahtzee::{Game};
 
 fn main() {
     seed();
@@ -13,6 +13,6 @@ fn main() {
         scores:[0; 13]
     };
 
-    main_loop(&mut game);
+    Game::main_loop(&mut game);
     vt_close("\n     PRESS ANY KEY TO CLOSE");
 }

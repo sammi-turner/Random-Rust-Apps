@@ -6,477 +6,480 @@ pub struct Game {
     pub scores:[i32;13]
 }
 
-/* Main loop */
-pub fn main_loop(x:&mut Game) {
-    default_scores(x);
-    let mut count = 0;
+/* Methods */
+impl Game {
+    /* Main loop */
+    pub fn main_loop(&mut self) {
+        self.default_scores();
+        let mut count = 0;
 
-    while count < 13 {
-        default_dice(x);
-        dice_count(x);
-        player_rerolls(x);
+        while count < 13 {
+            self.default_dice();
+            self.dice_count();
+            self.player_rerolls();
 
-        if rolls_left(x) {
-            dice_count(x);
-            player_rerolls(x);
-        };
+            if self.rolls_left() {
+                self.dice_count();
+                self.player_rerolls();
+            };
 
-        dice_count(x);
-        scoring_selection(x);
-        count += 1;
+            self.dice_count();
+            self.scoring_selection();
+            count += 1;
+        }
+
+        self.output_scores();
     }
 
-    output_scores(x);
-}
-
-/* Sets the dice held at the beginning of each round.
-The zero index represents the number of re-rolls. */
-fn default_dice(x:&mut Game) {
-    x.dice[0] = 5;
-    let mut count = 1;
-    while count < 7 {
-        x.dice[count] = 0;
-        count += 1;
-    }
-}
-
-/* Sets the value of each score box at the begining of each game.
-A value of '-1' means that the score box has not been filled. */
-fn default_scores(x:&mut Game) {
-    let mut count = 0;
-    while count < 13 {
-        x.scores[count] = -1;
-        count += 1;
-    }
-}
-
-/* Rolls the dice and stores the results */
-fn dice_count(x:&mut Game) {
-    while x.dice[0] > 0 {
-        let roll = pseudo(1, 6);
-        x.dice[0] -= 1;
-
-        match roll {
-            1 => x.dice[1] += 1,
-            2 => x.dice[2] += 1,
-            3 => x.dice[3] += 1,
-            4 => x.dice[4] += 1,
-            5 => x.dice[5] += 1,
-            6 => x.dice[6] += 1,
-            _ => vt_put_slice("Ooops")
+    /* Sets the dice held at the beginning of each round.
+    The zero index represents the number of re-rolls. */
+    fn default_dice(&mut self) {
+        self.dice[0] = 5;
+        let mut count = 1;
+        while count < 7 {
+            self.dice[count] = 0;
+            count += 1;
         }
     }
-}
 
-/* Player re-rolls dice by type */
-fn player_rerolls(x:&mut Game) {
-    let mut count = 1;
-    while count < 7 {
-        if x.dice[count] > 0 {
-            score_card(x);
-            let mut s = String::from("\n\n     How many ");
-            s.push_str(&count.to_string());
-            s.push_str("s do you wish to re-roll?");
-            vt_put_string(&mut s);
-            let ch = vt_key_i32();
-            let num = ch - 48;
-            if num > 0 && num <= x.dice[count] {
-                x.dice[count] -= num;
-                x.dice[0] += num;
+    /* Sets the value of each score box at the beginning of each game.
+    A value of '-1' means that the score box has not been filled. */
+    fn default_scores(&mut self) {
+        let mut count = 0;
+        while count < 13 {
+            self.scores[count] = -1;
+            count += 1;
+        }
+    }
+
+    /* Rolls the dice and stores the results */
+    fn dice_count(&mut self) {
+        while self.dice[0] > 0 {
+            let roll = pseudo(1, 6);
+            self.dice[0] -= 1;
+
+            match roll {
+                1 => self.dice[1] += 1,
+                2 => self.dice[2] += 1,
+                3 => self.dice[3] += 1,
+                4 => self.dice[4] += 1,
+                5 => self.dice[5] += 1,
+                6 => self.dice[6] += 1,
+                _ => vt_put_slice("Error")
             }
         }
-        count += 1;
     }
-}
 
-/* Uses the number of re-rolls in the main function. */
-fn rolls_left(x:&mut Game) -> bool {
-    return x.dice[0] > 0;
-}
-
-/* Scores written to both the file "output.txt", and the screen */
-fn output_scores(x:&mut Game) {
-    vt_cls();
-    let mut output = String::from("\n\n     FINAL SCORE CARD\n");
-
-    output.push_str("\n     Ones                     ");
-    output.push_str(&x.scores[0].to_string());
-
-    output.push_str("\n     Twos                     ");
-    output.push_str(&x.scores[1].to_string());
-
-    output.push_str("\n     Threes                   ");
-    output.push_str(&x.scores[2].to_string());
-
-    output.push_str("\n     Fours                    ");
-    output.push_str(&x.scores[3].to_string());
-
-    output.push_str("\n     Fives                    ");
-    output.push_str(&x.scores[4].to_string());
-
-    output.push_str("\n     Sixes                    ");
-    output.push_str(&x.scores[5].to_string());
-
-    output.push('\n');
-    output.push_str("\n     Upper total              ");
-    output.push_str(&upper_total(x).to_string());
-
-    output.push_str("\n     Upper bonus              ");
-    output.push_str(&upper_bonus(x).to_string());
-    output.push('\n');
-
-    output.push_str("\n     Three of a kind          ");
-    output.push_str(&x.scores[6].to_string());
-
-    output.push_str("\n     Four of a kind           ");
-    output.push_str(&x.scores[7].to_string());
-
-    output.push_str("\n     Full house               ");
-    output.push_str(&x.scores[8].to_string());
-
-    output.push_str("\n     Small Straight           ");
-    output.push_str(&x.scores[9].to_string());
-
-    output.push_str("\n     Large Straight           ");
-    output.push_str(&x.scores[10].to_string());
-
-    output.push_str("\n     Chance                   ");
-    output.push_str(&x.scores[11].to_string());
-
-    output.push_str("\n     Yahtzee                  ");
-    output.push_str(&x.scores[12].to_string());
-
-    output.push('\n');
-    output.push_str("\n     Grand total              ");
-    output.push_str(&grand_total(x).to_string());
-    output.push('\n');
-
-    vt_put_string(&mut output);
-    file_append("scores.txt", &*output);
-}
-
-/* Loop to insure that a valid input has been entered */
-fn scoring_selection(x:&mut Game) {
-    loop {
-        score_card(x);
-        vt_put_slice("\n\n     Which scorebox? ");
-        let ch = vt_key_char();
-
-        if ch == 'a' && x.scores[0] == -1 {
-            x.scores[0] = x.dice[1];
-            break;
-        }
-
-        if ch == 'b' && x.scores[1] == -1 {
-            x.scores[1] = x.dice[2] * 2;
-            break;
-        }
-
-        if ch == 'c' && x.scores[2] == -1 {
-            x.scores[2] = x.dice[3] * 3;
-            break;
-        }
-
-        if ch == 'd' && x.scores[3] == -1 {
-            x.scores[3] = x.dice[4] * 4;
-            break;
-        }
-
-        if ch == 'e' && x.scores[4] == -1 {
-            x.scores[4] = x.dice[5] * 5;
-            break;
-        }
-
-        if ch == 'f' && x.scores[5] == -1 {
-            x.scores[5] = x.dice[6] * 6;
-            break;
-        }
-
-        if ch == 'g' && x.scores[6] == -1 {
-            x.scores[6] = three_of_a_kind(x);
-            break;
-        }
-
-        if ch == 'h' && x.scores[7] == -1 {
-            x.scores[7] = four_of_a_kind(x);
-            break;
-        }
-
-        if ch == 'i' && x.scores[8] == -1 {
-            x.scores[8] = full_house(x);
-            break;
-        }
-
-        if ch == 'j' && x.scores[9] == -1 {
-            x.scores[9] = small_straight(x);
-            break;
-        }
-
-        if ch == 'k' && x.scores[10] == -1 {
-            x.scores[10] = large_straight(x);
-            break;
-        }
-
-        if ch == 'l' && x.scores[11] == -1 {
-            x.scores[11] = chance(x);
-            break;
-        }
-
-        if ch == 'm' && x.scores[12] == -1 {
-            x.scores[12] = yahtzee(x);
-            break;
+    /* Player re-rolls dice by type */
+    fn player_rerolls(&mut self) {
+        let mut count = 1;
+        while count < 7 {
+            if self.dice[count] > 0 {
+                self.score_card();
+                let mut s = String::from("\n\n     How many ");
+                s.push_str(&count.to_string());
+                s.push_str("s do you wish to re-roll?");
+                vt_put_string(&mut s);
+                let ch = vt_key_i32();
+                let num = ch - 48;
+                if num > 0 && num <= self.dice[count] {
+                    self.dice[count] -= num;
+                    self.dice[0] += num;
+                }
+            }
+            count += 1;
         }
     }
-}
 
-/* Prints out the score card so far. */
-fn score_card(x:&mut Game) {
-    vt_cls();
-    vt_cursor_off();
-    let mut s = String::from("\n     SCORE CARD\n");
-
-    s.push_str("\n     Ones                     ");
-    if x.scores[0] == -1 {
-        s.push('a');
-    }
-    else {
-        s.push_str(&x.scores[0].to_string());
+    /* Uses the number of re-rolls in the main function. */
+    fn rolls_left(&mut self) -> bool {
+        return self.dice[0] > 0;
     }
 
-    s.push_str("\n     Twos                     ");
-    if x.scores[1] == -1 {
-        s.push('b');
-    }
-    else {
-        s.push_str(&x.scores[1].to_string());
-    }
+    /* Scores written to both the file "output.txt", and the screen */
+    fn output_scores(&mut self) {
+        vt_cls();
+        let mut output = String::from("\n\n     FINAL SCORE CARD\n");
 
-    s.push_str("\n     Threes                   ");
-    if x.scores[2] == -1 {
-        s.push('c');
-    }
-    else {
-        s.push_str(&x.scores[2].to_string());
-    }
+        output.push_str("\n     Ones                     ");
+        output.push_str(&self.scores[0].to_string());
 
-    s.push_str("\n     Fours                    ");
-    if x.scores[3] == -1 {
-        s.push('d');
-    }
-    else {
-        s.push_str(&x.scores[3].to_string());
-    }
+        output.push_str("\n     Twos                     ");
+        output.push_str(&self.scores[1].to_string());
 
-    s.push_str("\n     Fives                    ");
-    if x.scores[4] == -1 {
-        s.push('e');
-    }
-    else {
-        s.push_str(&x.scores[4].to_string());
-    }
+        output.push_str("\n     Threes                   ");
+        output.push_str(&self.scores[2].to_string());
 
-    s.push_str("\n     Sixes                    ");
-    if x.scores[5] == -1 {
-        s.push('f');
-    }
-    else {
-        s.push_str(&x.scores[5].to_string());
-    }
+        output.push_str("\n     Fours                    ");
+        output.push_str(&self.scores[3].to_string());
 
-    s.push_str("\n     Three of a kind          ");
-    if x.scores[6] == -1 {
-        s.push('g');
-    }
-    else {
-        s.push_str(&x.scores[6].to_string());
-    }
+        output.push_str("\n     Fives                    ");
+        output.push_str(&self.scores[4].to_string());
 
-    s.push_str("\n     Four of a kind           ");
-    if x.scores[7] == -1 {
-        s.push('h');
-    }
-    else {
-        s.push_str(&x.scores[7].to_string());
-    }
+        output.push_str("\n     Sixes                    ");
+        output.push_str(&self.scores[5].to_string());
 
-    s.push_str("\n     Full house               ");
-    if x.scores[8] == -1 {
-        s.push('i');
-    }
-    else {
-        s.push_str(&x.scores[8].to_string());
+        output.push('\n');
+        output.push_str("\n     Upper total              ");
+        output.push_str(&self.upper_total().to_string());
+
+        output.push_str("\n     Upper bonus              ");
+        output.push_str(&self.upper_bonus().to_string());
+        output.push('\n');
+
+        output.push_str("\n     Three of a kind          ");
+        output.push_str(&self.scores[6].to_string());
+
+        output.push_str("\n     Four of a kind           ");
+        output.push_str(&self.scores[7].to_string());
+
+        output.push_str("\n     Full house               ");
+        output.push_str(&self.scores[8].to_string());
+
+        output.push_str("\n     Small Straight           ");
+        output.push_str(&self.scores[9].to_string());
+
+        output.push_str("\n     Large Straight           ");
+        output.push_str(&self.scores[10].to_string());
+
+        output.push_str("\n     Chance                   ");
+        output.push_str(&self.scores[11].to_string());
+
+        output.push_str("\n     Yahtzee                  ");
+        output.push_str(&self.scores[12].to_string());
+
+        output.push('\n');
+        output.push_str("\n     Grand total              ");
+        output.push_str(&self.grand_total().to_string());
+        output.push('\n');
+
+        vt_put_string(&mut output);
+        file_append("scores.txt", &*output);
     }
 
-    s.push_str("\n     Small straight           ");
-    if x.scores[9] == -1 {
-        s.push('j');
-    }
-    else {
-        s.push_str(&x.scores[9].to_string());
-    }
+    /* Loop to insure that a valid input has been entered */
+    fn scoring_selection(&mut self) {
+        loop {
+            self.score_card();
+            vt_put_slice("\n\n     Which score box? ");
+            let ch = vt_key_char();
 
-    s.push_str("\n     Large straight           ");
-    if x.scores[10] == -1 {
-        s.push('k');
-    }
-    else {
-        s.push_str(&x.scores[10].to_string());
-    }
+            if ch == 'a' && self.scores[0] == -1 {
+                self.scores[0] = self.dice[1];
+                break;
+            }
 
-    s.push_str("\n     Chance                   ");
-    if x.scores[11] == -1 {
-        s.push('l');
-    }
-    else {
-        s.push_str(&x.scores[11].to_string());
-    }
+            if ch == 'b' && self.scores[1] == -1 {
+                self.scores[1] = self.dice[2] * 2;
+                break;
+            }
 
-    s.push_str("\n     Yahtzee                  ");
-    if x.scores[12] == -1 {
-        s.push('m');
-    }
-    else {
-        s.push_str(&x.scores[12].to_string());
-    }
+            if ch == 'c' && self.scores[2] == -1 {
+                self.scores[2] = self.dice[3] * 3;
+                break;
+            }
 
-    s.push_str("\n\n     DICE HELD\n\n     ");
+            if ch == 'd' && self.scores[3] == -1 {
+                self.scores[3] = self.dice[4] * 4;
+                break;
+            }
 
-    s.push_str(&x.dice[1].to_string());
-    s.push_str(" 1s, ");
+            if ch == 'e' && self.scores[4] == -1 {
+                self.scores[4] = self.dice[5] * 5;
+                break;
+            }
 
-    s.push_str(&x.dice[2].to_string());
-    s.push_str(" 2s, ");
+            if ch == 'f' && self.scores[5] == -1 {
+                self.scores[5] = self.dice[6] * 6;
+                break;
+            }
 
-    s.push_str(&x.dice[3].to_string());
-    s.push_str(" 3s, ");
+            if ch == 'g' && self.scores[6] == -1 {
+                self.scores[6] = self.three_of_a_kind();
+                break;
+            }
 
-    s.push_str(&x.dice[4].to_string());
-    s.push_str(" 4s, ");
+            if ch == 'h' && self.scores[7] == -1 {
+                self.scores[7] = self.four_of_a_kind();
+                break;
+            }
 
-    s.push_str(&x.dice[5].to_string());
-    s.push_str(" 5s, ");
+            if ch == 'i' && self.scores[8] == -1 {
+                self.scores[8] = self.full_house();
+                break;
+            }
 
-    s.push_str("and ");
-    s.push_str(&x.dice[6].to_string());
-    s.push_str(" 6s. ");
+            if ch == 'j' && self.scores[9] == -1 {
+                self.scores[9] = self.small_straight();
+                break;
+            }
 
-    s.push_str("\n\n     You have ");
-    s.push_str(&x.dice[0].to_string());
-    s.push_str(" re-rolls.");
+            if ch == 'k' && self.scores[10] == -1 {
+                self.scores[10] = self.large_straight();
+                break;
+            }
 
-    vt_put_string(&mut s);
-}
+            if ch == 'l' && self.scores[11] == -1 {
+                self.scores[11] = self.chance();
+                break;
+            }
 
-/* Three of a kind score function */
-fn three_of_a_kind(x:&mut Game) -> i32 {
-    let mut value = 0;
-    if x.dice[1] > 2 || x.dice[2] > 2 || x.dice[3] > 2 || x.dice[4] > 2 || x.dice[5] > 2 || x.dice[6] > 2 {
-        value = x.dice[1] + (x.dice[2] * 2) + (x.dice[3] * 3) + (x.dice[4] * 4) + (x.dice[5] * 5) + (x.dice[6] * 6);
-    }
-    return value;
-}
-
-/* Four of a kind score function */
-fn four_of_a_kind(x:&mut Game) -> i32 {
-    let mut value = 0;
-    if x.dice[1] > 3 || x.dice[2] > 3 || x.dice[3] > 3 || x.dice[4] > 3 || x.dice[5] > 3 || x.dice[6] > 3 {
-        value = x.dice[1] + (x.dice[2] * 2) + (x.dice[3] * 3) + (x.dice[4] * 4) + (x.dice[5] * 5) + (x.dice[6] * 6);
-    }
-    return value;
-}
-
-/* Full house score function */
-fn full_house(x:&mut Game) -> i32 {
-    let mut value = 0;
-    let mut pair_test = false;
-    let mut triple_test = false;
-
-    if x.dice[1] == 3 || x.dice[2] == 3 || x.dice[3] == 3 || x.dice[4] == 3 || x.dice[5] == 3 || x.dice[6] == 3 {
-        triple_test = true;
+            if ch == 'm' && self.scores[12] == -1 {
+                self.scores[12] = self.yahtzee();
+                break;
+            }
+        }
     }
 
-    if x.dice[1] == 2 || x.dice[2] == 2 || x.dice[3] == 2 || x.dice[4] == 2 || x.dice[5] == 2 || x.dice[6] == 2 {
-        pair_test = true;
+    /* Prints out the score card so far. */
+    fn score_card(&mut self) {
+        vt_cls();
+        vt_cursor_off();
+        let mut s = String::from("\n     SCORE CARD\n");
+
+        s.push_str("\n     Ones                     ");
+        if self.scores[0] == -1 {
+            s.push('a');
+        }
+        else {
+            s.push_str(&self.scores[0].to_string());
+        }
+
+        s.push_str("\n     Twos                     ");
+        if self.scores[1] == -1 {
+            s.push('b');
+        }
+        else {
+            s.push_str(&self.scores[1].to_string());
+        }
+
+        s.push_str("\n     Threes                   ");
+        if self.scores[2] == -1 {
+            s.push('c');
+        }
+        else {
+            s.push_str(&self.scores[2].to_string());
+        }
+
+        s.push_str("\n     Fours                    ");
+        if self.scores[3] == -1 {
+            s.push('d');
+        }
+        else {
+            s.push_str(&self.scores[3].to_string());
+        }
+
+        s.push_str("\n     Fives                    ");
+        if self.scores[4] == -1 {
+            s.push('e');
+        }
+        else {
+            s.push_str(&self.scores[4].to_string());
+        }
+
+        s.push_str("\n     Sixes                    ");
+        if self.scores[5] == -1 {
+            s.push('f');
+        }
+        else {
+            s.push_str(&self.scores[5].to_string());
+        }
+
+        s.push_str("\n     Three of a kind          ");
+        if self.scores[6] == -1 {
+            s.push('g');
+        }
+        else {
+            s.push_str(&self.scores[6].to_string());
+        }
+
+        s.push_str("\n     Four of a kind           ");
+        if self.scores[7] == -1 {
+            s.push('h');
+        }
+        else {
+            s.push_str(&self.scores[7].to_string());
+        }
+
+        s.push_str("\n     Full house               ");
+        if self.scores[8] == -1 {
+            s.push('i');
+        }
+        else {
+            s.push_str(&self.scores[8].to_string());
+        }
+
+        s.push_str("\n     Small straight           ");
+        if self.scores[9] == -1 {
+            s.push('j');
+        }
+        else {
+            s.push_str(&self.scores[9].to_string());
+        }
+
+        s.push_str("\n     Large straight           ");
+        if self.scores[10] == -1 {
+            s.push('k');
+        }
+        else {
+            s.push_str(&self.scores[10].to_string());
+        }
+
+        s.push_str("\n     Chance                   ");
+        if self.scores[11] == -1 {
+            s.push('l');
+        }
+        else {
+            s.push_str(&self.scores[11].to_string());
+        }
+
+        s.push_str("\n     Yahtzee                  ");
+        if self.scores[12] == -1 {
+            s.push('m');
+        }
+        else {
+            s.push_str(&self.scores[12].to_string());
+        }
+
+        s.push_str("\n\n     DICE HELD\n\n     ");
+
+        s.push_str(&self.dice[1].to_string());
+        s.push_str(" 1s, ");
+
+        s.push_str(&self.dice[2].to_string());
+        s.push_str(" 2s, ");
+
+        s.push_str(&self.dice[3].to_string());
+        s.push_str(" 3s, ");
+
+        s.push_str(&self.dice[4].to_string());
+        s.push_str(" 4s, ");
+
+        s.push_str(&self.dice[5].to_string());
+        s.push_str(" 5s, ");
+
+        s.push_str("and ");
+        s.push_str(&self.dice[6].to_string());
+        s.push_str(" 6s. ");
+
+        s.push_str("\n\n     You have ");
+        s.push_str(&self.dice[0].to_string());
+        s.push_str(" re-rolls.");
+
+        vt_put_string(&mut s);
     }
 
-    if triple_test && pair_test {
-        value = 25;
+    /* Three of a kind score function */
+    fn three_of_a_kind(&mut self) -> i32 {
+        let mut value = 0;
+        if self.dice[1] > 2 || self.dice[2] > 2 || self.dice[3] > 2 || self.dice[4] > 2 || self.dice[5] > 2 || self.dice[6] > 2 {
+            value = self.dice[1] + (self.dice[2] * 2) + (self.dice[3] * 3) + (self.dice[4] * 4) + (self.dice[5] * 5) + (self.dice[6] * 6);
+        }
+        return value;
     }
 
-    if x.dice[1] == 5 || x.dice[2] == 5 || x.dice[3] == 5 || x.dice[4] == 5 || x.dice[5] == 5 || x.dice[6] == 5 {
-        value = 25;
+    /* Four of a kind score function */
+    fn four_of_a_kind(&mut self) -> i32 {
+        let mut value = 0;
+        if self.dice[1] > 3 || self.dice[2] > 3 || self.dice[3] > 3 || self.dice[4] > 3 || self.dice[5] > 3 || self.dice[6] > 3 {
+            value = self.dice[1] + (self.dice[2] * 2) + (self.dice[3] * 3) + (self.dice[4] * 4) + (self.dice[5] * 5) + (self.dice[6] * 6);
+        }
+        return value;
     }
 
-    return value;
-}
+    /* Full house score function */
+    fn full_house(&mut self) -> i32 {
+        let mut value = 0;
+        let mut pair_test = false;
+        let mut triple_test = false;
 
-/* Small straight score function */
-fn small_straight(x:&mut Game) -> i32 {
-    let mut value = 0;
+        if self.dice[1] == 3 || self.dice[2] == 3 || self.dice[3] == 3 || self.dice[4] == 3 || self.dice[5] == 3 || self.dice[6] == 3 {
+            triple_test = true;
+        }
 
-    if x.dice[1] > 0 && x.dice[2] > 0 && x.dice[3] > 0 && x.dice[4] > 0 {
-        value = 30;
-    };
+        if self.dice[1] == 2 || self.dice[2] == 2 || self.dice[3] == 2 || self.dice[4] == 2 || self.dice[5] == 2 || self.dice[6] == 2 {
+            pair_test = true;
+        }
 
-    if x.dice[2] > 0 && x.dice[3] > 0 && x.dice[4] > 0 && x.dice[5] > 0 {
-        value = 30;
-    };
+        if triple_test && pair_test {
+            value = 25;
+        }
 
-    if x.dice[3] > 0 && x.dice[4] > 0 && x.dice[5] > 0 && x.dice[6] > 0 {
-        value = 30;
-    };
+        if self.dice[1] == 5 || self.dice[2] == 5 || self.dice[3] == 5 || self.dice[4] == 5 || self.dice[5] == 5 || self.dice[6] == 5 {
+            value = 25;
+        }
 
-    return value;
-}
-
-/* Large straight score function */
-fn large_straight(x:&mut Game) -> i32 {
-    let mut value = 0;
-
-    if x.dice[1] > 0 && x.dice[2] > 0 && x.dice[3] > 0 && x.dice[4] > 0 && x.dice[5] > 0 {
-        value = 40;
-    };
-
-    if x.dice[2] > 0 && x.dice[3] > 0 && x.dice[4] > 0 && x.dice[5] > 0 && x.dice[6] > 0 {
-        value = 40;
-    };
-
-    return value;
-}
-
-/* The total of all dice. Regardless of arrangement */
-fn chance(x:&mut Game) -> i32 {
-    return x.dice[1] + (x.dice[2] * 2) + (x.dice[3] * 3) + (x.dice[4] * 4) + (x.dice[5] * 5) + (x.dice[6] * 6);
-}
-
-/* Yahtzee score function */
-fn yahtzee(x:&mut Game) -> i32 {
-    let mut value = 0;
-
-    if x.dice[1] == 5 || x.dice[2] == 5 || x.dice[3] == 5 || x.dice[4] == 5 || x.dice[5] == 5 || x.dice[6] == 5 {
-        value = 50;
-    };
-
-    return value;
-}
-
-/* Total of the upper section */
-fn upper_total(x:&mut Game) -> i32 {
-    return x.scores[0] + x.scores[1] + x.scores[2] + x.scores[3] + x.scores[4] + x.scores[5];
-}
-
-/* If the upper section total is greater than 62, then a bonus of 35 is awarded */
-fn upper_bonus(x:&mut Game) -> i32 {
-    let mut value = 0;
-
-    if upper_total(x) > 62 {
-        value = 35;
+        return value;
     }
 
-    return value;
-}
+    /* Small straight score function */
+    fn small_straight(&mut self) -> i32 {
+        let mut value = 0;
 
-/* Total of all scores */
-fn grand_total(x:&mut Game) -> i32 {
-    return upper_total(x) + upper_bonus(x) + x.scores[6] + x.scores[7] + x.scores[8] + x.scores[9] + x.scores[10] + x.scores[11] + x.scores[12];
+        if self.dice[1] > 0 && self.dice[2] > 0 && self.dice[3] > 0 && self.dice[4] > 0 {
+            value = 30;
+        };
+
+        if self.dice[2] > 0 && self.dice[3] > 0 && self.dice[4] > 0 && self.dice[5] > 0 {
+            value = 30;
+        };
+
+        if self.dice[3] > 0 && self.dice[4] > 0 && self.dice[5] > 0 && self.dice[6] > 0 {
+            value = 30;
+        };
+
+        return value;
+    }
+
+    /* Large straight score function */
+    fn large_straight(&mut self) -> i32 {
+        let mut value = 0;
+
+        if self.dice[1] > 0 && self.dice[2] > 0 && self.dice[3] > 0 && self.dice[4] > 0 && self.dice[5] > 0 {
+            value = 40;
+        };
+
+        if self.dice[2] > 0 && self.dice[3] > 0 && self.dice[4] > 0 && self.dice[5] > 0 && self.dice[6] > 0 {
+            value = 40;
+        };
+
+        return value;
+    }
+
+    /* The total of all dice. Regardless of arrangement */
+    fn chance(&mut self) -> i32 {
+        return self.dice[1] + (self.dice[2] * 2) + (self.dice[3] * 3) + (self.dice[4] * 4) + (self.dice[5] * 5) + (self.dice[6] * 6);
+    }
+
+    /* Yahtzee score function */
+    fn yahtzee(&mut self) -> i32 {
+        let mut value = 0;
+
+        if self.dice[1] == 5 || self.dice[2] == 5 || self.dice[3] == 5 || self.dice[4] == 5 || self.dice[5] == 5 || self.dice[6] == 5 {
+            value = 50;
+        };
+
+        return value;
+    }
+
+    /* Total of the upper section */
+    fn upper_total(&mut self) -> i32 {
+        return self.scores[0] + self.scores[1] + self.scores[2] + self.scores[3] + self.scores[4] + self.scores[5];
+    }
+
+    /* If the upper section total is greater than 62, then a bonus of 35 is awarded */
+    fn upper_bonus(&mut self) -> i32 {
+        let mut value = 0;
+
+        if self.upper_total() > 62 {
+            value = 35;
+        }
+
+        return value;
+    }
+
+    /* Total of all scores */
+    fn grand_total(&mut self) -> i32 {
+        return self.upper_total() + self.upper_bonus() + self.scores[6] + self.scores[7] + self.scores[8] + self.scores[9] + self.scores[10] + self.scores[11] + self.scores[12];
+    }
 }
