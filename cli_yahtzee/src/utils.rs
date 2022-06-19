@@ -23,9 +23,7 @@ pub fn seed() {
 }
 
 // Generate a pseudo-random number between x and y
-pub fn pseudo(x:i32, y:i32) -> i32 {
-    return rand::thread_rng().gen_range(x..y + 1);
-}
+pub fn pseudo(x:i32, y:i32) -> i32 { return thread_rng().gen_range(x..y + 1); }
 
 // Open the virtual terminal
 pub fn vt_open() {
