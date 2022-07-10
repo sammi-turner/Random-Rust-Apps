@@ -4,14 +4,14 @@
 extern crate ncurses;
 
 use ncurses::*;
-use ncurses::CURSOR_VISIBILITY::{CURSOR_INVISIBLE};
+use ncurses::CURSOR_VISIBILITY::*;
 
 use std::*;
 use std::io::*;
-use std::time::SystemTime;
-use std::fs::OpenOptions;
+use std::time::*;
+use std::fs::*;
 
-use rand::rngs::StdRng;
+use rand::rngs::*;
 use rand::*;
 
 // Seed the pseudo-random number generator with unix time
@@ -27,10 +27,11 @@ pub fn pseudo(x:i32, y:i32) -> i32 {
     return thread_rng().gen_range(x..y + 1);
 }
 
-// Open the virtual terminal
+// Opens the virtual terminal.
 pub fn vt_open() {
     initscr();
     raw();
+    scrollok(stdscr(), true);
     keypad(stdscr(), true);
 }
 
@@ -65,13 +66,6 @@ pub fn vt_key_char() -> char {
     return ch_char;
 }
 
-// Displays the String x in the virtual terminal
-pub fn vt_put_string(x:&mut String) {
-    let slice:&str = &*x;
-    addstr(slice);
-    refresh();
-}
-
 // Displays the slice x in the virtual terminal
 pub fn vt_put_slice(x: &str) {
     addstr(x);
@@ -79,18 +73,18 @@ pub fn vt_put_slice(x: &str) {
 }
 
 // Write data to a file
-pub fn file_write(path:&str, data:&str) {
+pub fn write_to_file(path:&str, data:&str) {
     fs::write(path, data).expect("Unable to write file.");
 }
 
 // Append data to a file
-pub fn file_append(path:&str, data:&str) {
+pub fn append_to_file(path:&str, data:&str) {
     if file_exists(path) {
         let mut file = OpenOptions::new().append(true).open(path).expect("Unable to open file.");
         file.write_all(data.as_bytes()).expect("Write failed");
     }
     else {
-        file_write(path, data);
+        write_to_file(path, data);
     }
 }
 

@@ -79,7 +79,7 @@ impl Game {
                 let mut s = String::from("\n\n     How many ");
                 s.push_str(&count.to_string());
                 s.push_str("s do you wish to re-roll?");
-                vt_put_string(&mut s);
+                vt_put_slice(&s);
                 let ch = vt_key_i32();
                 let num = ch - 48;
                 if num > 0 && num <= self.dice[count] {
@@ -153,8 +153,8 @@ impl Game {
         output.push_str(&self.grand_total().to_string());
         output.push('\n');
 
-        vt_put_string(&mut output);
-        file_append("scores.txt", &*output);
+        vt_put_slice(&output);
+        append_to_file("scores.txt", &output);
     }
 
     /* Loop to insure that a valid input has been entered */
@@ -366,7 +366,7 @@ impl Game {
         s.push_str(&self.dice[0].to_string());
         s.push_str(" re-rolls.");
 
-        vt_put_string(&mut s);
+        vt_put_slice(&s);
     }
 
     /* Three of a kind score function */
