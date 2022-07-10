@@ -2,6 +2,8 @@
 
 A solitaire command line version of [Yahtzee](https://en.wikipedia.org/wiki/Yahtzee) using the [ncurses](https://crates.io/crates/ncurses) crate.
 
+<img src="cli_yahtzee.png" width="100%" height="auto" />
+
 ## Will not run on Windows
 
 The ncurses crate is unix only.
