@@ -1,3 +1,3 @@
 # Random-Rust-Apps
 
-Toy projects in Rust for MacOS.
+Toy projects in Rust.
