@@ -1,0 +1,13 @@
+# List Editor
+
+A command-line version of the classic todo application.
+
+<img src="list_editor.png" width="100%" height="auto" />
+
+## Will not run on Windows
+
+The ncurses crate is unix only.
+
+## Will not run in the IntelliJ terminal
+
+Although the app can be built in IntelliJ using the Rust plugin, the finished binary should be run in a normal terminal emulator.
