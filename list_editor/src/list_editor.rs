@@ -2,7 +2,7 @@ use crate::rbp::*;
 
 /* Data structure */
 pub struct List {
-    pub item_list: String,
+    pub item_list: Vec<String>,
     pub copied_item: String,
     pub next_index: usize,
 }
@@ -48,8 +48,8 @@ impl List {
                 break;
             }
 
-            let f = format!("{}\n", new_item.trim());
-            self.item_list.push_str(&f);
+            let f = format!("{}", new_item.trim());
+            self.item_list.push(f);
             self.next_index += 1;
         }
     }
@@ -60,7 +60,7 @@ impl List {
         let mut count: usize = 1;
 
         while count < self.next_index {
-            let f = format!("     {}. {}\n", count, nth_line(&self.item_list, count - 1));
+            let f = format!("     {}. {}\n", count, self.item_list[count - 1]);
             result.push_str(&f);
             count += 1;
         }
@@ -95,11 +95,12 @@ impl List {
                 break;
             }
 
-            let old_item = nth_line(&self.item_list, num - 1);
+            let copy = self.item_list[num - 1].clone();
+            let old_item = copy;
             let updated_item =
                 vt_edit_prompt("     UPDATE\n\n   > ", &mut old_item.to_string(), 80);
 
-            self.item_list = replace_line_at(&self.item_list, &updated_item.trim(), num - 1);
+            self.item_list[num - 1] = updated_item.trim().to_string();
             self.read_list();
             break;
         }
@@ -124,7 +125,7 @@ impl List {
                 break;
             }
 
-            self.item_list = remove_nth_line(&self.item_list, num - 1);
+            self.item_list.remove(num - 1);
             self.next_index -= 1;
         }
     }
@@ -154,7 +155,7 @@ impl List {
                 break;
             }
 
-            self.item_list = insert_line_at(&self.item_list, &new_item, num - 1);
+            self.item_list.insert(num - 1, new_item);
             self.next_index += 1;
 
             self.read_list();
@@ -180,7 +181,8 @@ impl List {
                 break;
             }
 
-            self.copied_item = nth_line(&self.item_list, num - 1).to_string();
+            let copy = self.item_list[num - 1].clone();
+            self.copied_item = copy;
             break;
         }
     }
@@ -203,8 +205,9 @@ impl List {
                 break;
             }
 
-            self.copied_item = nth_line(&self.item_list, num - 1).to_string();
-            self.item_list = remove_nth_line(&self.item_list, num - 1);
+            let copy = self.item_list[num - 1].clone();
+            self.copied_item = copy;
+            self.item_list.remove(num - 1);
             self.next_index -= 1;
 
             self.read_list();
@@ -230,7 +233,8 @@ impl List {
                 break;
             }
 
-            self.item_list = insert_line_at(&self.item_list, &self.copied_item, num - 1);
+            let copy = self.copied_item.clone();
+            self.item_list.insert(num - 1, copy);
             self.next_index += 1;
 
             self.read_list();
@@ -246,8 +250,14 @@ impl List {
         vt_put_slice("\n     File to load? ");
         let name = vt_input(80);
 
-        self.item_list = read_from_file(&name);
-        self.next_index = line_count(&self.item_list) + 1;
+        let result = read_from_file(&name);
+        let r = line_count(&result);
+
+        self.item_list.clear();
+        for i in 0..r {
+            self.item_list.push(nth_line(&result, i).to_string());
+        }
+        self.next_index = r;
         self.read_list();
     }
 
@@ -259,7 +269,11 @@ impl List {
         vt_put_slice("\n     File to save? ");
         let name = vt_input(80);
 
-        write_to_file(&name, &self.item_list);
+        let l = self.item_list.len();
+        for i in 0..l {
+            let s = format!("{}\n", &self.item_list[i]);
+            append_to_file(&name, &s);
+        }
         self.read_list();
     }
 }

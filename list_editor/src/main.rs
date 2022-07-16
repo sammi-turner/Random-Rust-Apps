@@ -8,7 +8,7 @@ use list_editor::List;
 fn main() {
     vt_open();
     let mut list = List {
-        item_list: String::new(),
+        item_list: Vec::new(),
         copied_item: String::new(),
         next_index: 1,
     };

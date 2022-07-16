@@ -1,5 +1,6 @@
 extern crate ncurses;
 use std::io::Read;
+use std::io::Write;
 
 // A macro to initialise a vector of strings.
 macro_rules! vec_of_strings {
@@ -67,80 +68,24 @@ pub fn nth_line(x: &str, y: usize) -> &str {
     return result;
 }
 
-// Removes the nth line (zero indexed) from a slice and returns it as a string.
-pub fn remove_nth_line(x: &str, y: usize) -> String {
-    if x == "" || y >= line_count(x) {
-        return x.to_string();
-    }
-
-    let mut result = String::new();
-    let line_vec = x.split("\n");
-    let mut count: usize = 0;
-
-    for r in line_vec {
-        if y != count {
-            result.push_str(&r);
-            result.push('\n');
-        }
-        count += 1;
-    }
-
-    let _ = result.pop();
-    return result;
-}
-
-// Inserts a line at the nth position (zero indexed) of a slice and returns that as a string.
-pub fn insert_line_at(x: &str, y: &str, z: usize) -> String {
-    if x == "" || y == "" || z >= line_count(x) {
-        return x.to_string();
-    }
-
-    let mut result = String::new();
-    let line_vec = x.split("\n");
-    let mut count: usize = 0;
-
-    for r in line_vec {
-        if z == count {
-            result.push_str(&y);
-            result.push('\n');
-        }
-        result.push_str(&r);
-        result.push('\n');
-        count += 1;
-    }
-
-    let _ = result.pop();
-    return result;
-}
-
-// Replaces a line at the nth position (zero indexed) of a slice and returns that as a string.
-pub fn replace_line_at(x: &str, y: &str, z: usize) -> String {
-    if x == "" || y == "" || z >= line_count(x) {
-        return x.to_string();
-    }
-
-    let mut result = String::new();
-    let line_vec = x.split("\n");
-    let mut count: usize = 0;
-
-    for r in line_vec {
-        if z == count {
-            result.push_str(&y);
-            result.push('\n');
-        } else {
-            result.push_str(&r);
-            result.push('\n');
-        }
-        count += 1;
-    }
-
-    let _ = result.pop();
-    return result;
-}
-
 // Writes data to a file.
 pub fn write_to_file(path: &str, data: &str) {
     std::fs::write(path, data).unwrap();
+}
+
+// Returns true if the file path exists.
+pub fn file_exists(path: &str) -> bool {
+    return std::fs::metadata(path).is_ok();
+}
+
+// Appends data to a file.
+pub fn append_to_file(path: &str, data: &str) {
+    if file_exists(path) {
+        let mut file = std::fs::OpenOptions::new().append(true).open(path).unwrap();
+        file.write_all(data.as_bytes()).unwrap();
+    } else {
+        write_to_file(path, data);
+    }
 }
 
 // Reads from a file.
