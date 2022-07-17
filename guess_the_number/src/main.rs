@@ -1,5 +1,5 @@
 use rand::Rng;
-use std::cmp::Ordering;
+use std::cmp::Ordering::*;
 use std::io::Write;
 
 fn main() {
@@ -16,9 +16,9 @@ fn main() {
         };
 
         match guess.cmp(&secret_number) {
-            Ordering::Less => println!("{}", "Too small."),
-            Ordering::Greater => println!("{}", "Too big."),
-            Ordering::Equal => {
+            Less => println!("{}", "Too small."),
+            Greater => println!("{}", "Too big."),
+            Equal => {
                 println!("{}", "You win!\n");
                 break;
             }
